@@ -1,0 +1,109 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Install Required tools
+      apt: name={{item}} state=present
+      with_items:
+        - unzip
+
+    # PHP 7 
+    - name: Add PHP 7 ppa
+      apt_repository: repo='ppa:ondrej/php'
+     
+    - name: Update the Apt Cache
+      apt: update_cache=yes cache_valid_time=3600
+  
+    - name: Install all the required php packages
+      apt: name={{item}} state=present
+      with_items:
+       - php7.0
+       - php7.0-fpm
+       - php7.0-mysql
+       - php7.0-xml
+   
+    - name: Remove Apache-2 installed with PHP 7
+      apt: name=apache2 state=absent
+    
+    # MYSQL
+
+    - name: Install MYSQL
+      apt: name={{item}} state=present
+      with_items:
+       - mysql-server-5.6
+       - python-mysqldb
+
+    - name: Generate the Mysql password
+      command: openssl rand -hex 7 creates=/root/.my.cnf
+      register: new_password_mysql_root
+
+    - name: Remove anonymous users
+      mysql_user: name="" state=absent
+
+    - name: Remove test database
+      mysql_db: name=test state=absent
+
+    - name: Change the root password
+      mysql_user: name=root  host={{item}} password={{new_password_mysql_root.stdout}}
+      with_items:
+       - "{{ ansible_hostname }}"
+       - 127.0.0.1
+       - ::1
+       - localhost
+      when: new_password_mysql_root.changed
+
+    - name: Output root password
+      debug: msg="New root password is {{ new_password_mysql_root.stdout }}"
+      when: new_password_mysql_root.changed
+
+    - name: Copy the my.conf file
+      template: src=templates/mysql/my.cnf dest=/root/.my.cnf
+      when: new_password_mysql_root.changed
+   
+    # Nginx
+
+    - name: Install nginx
+      apt: name=nginx  state=present
+ 
+    - name: Start nginx service
+      service: name=nginx state=running
+
+    - name: Create nginx default configuration 
+      template: src=templates/nginx/default dest=/etc/nginx/sites-available/default
+      notify: restart nginx
+
+    - name: Unzip WordPress
+      unarchive: src=files/wordpress.zip dest=/tmp  creates=/tmp/wordpress/wp-settings.php
+
+    - name: Create project Folder
+      file: dest=/var/www/book.example.com state=directory
+   
+    - name: Copy WordPress files     
+      command: cp -a /tmp/wordpress/. /var/www/book.example.com creates=/var/www/book.example.com/wp-settings.php
+    
+    - name: Create wordpress MYSQL DB
+      mysql_db: name=wordpress state=present 
+
+    - name: Create wordpress MYSQL User
+      mysql_user: name=wordpress host=localhost password=bananas priv=wordpress.*:ALL
+
+    - name: Create wp-config.php
+      template: src=templates/wordpress/wp-config.php dest=/var/www/book.example.com/wp-config.php
+
+    - name: Does wordpress DB exists?
+      command: mysql -u root wordpress -e "SELECT ID FROM wordpress.wp_users LIMIT 1;"
+      register: db_exist
+      ignore_errors: true
+      changed_when: false
+ 
+    - name: Copy database backup file
+      copy: src=files/wp-database.sql dest=/tmp/wp-database.sql
+      when: db_exist.rc > 0
+
+    - name: Restore the DB snapshot 
+      mysql_db: target=/tmp/wp-database.sql state=import name=wordpress
+      when: db_exist.rc > 0
+ 
+  handlers:
+    - name: restart nginx
+      service: name=nginx state=restarted 
