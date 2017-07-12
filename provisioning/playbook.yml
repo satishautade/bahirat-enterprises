@@ -76,10 +76,10 @@
       unarchive: src=files/wordpress.zip dest=/tmp  creates=/tmp/wordpress/wp-settings.php
 
     - name: Create project Folder
-      file: dest=/var/www/book.example.com state=directory
+      file: dest=/var/www/bahirat-enterprises.com state=directory
    
     - name: Copy WordPress files     
-      command: cp -a /tmp/wordpress/. /var/www/book.example.com creates=/var/www/book.example.com/wp-settings.php
+      command: cp -a /tmp/wordpress/. /var/www/bahirat-enterprises.com creates=/var/www/bahirat-enterprises.com/wp-settings.php
     
     - name: Create wordpress MYSQL DB
       mysql_db: name=wordpress state=present 
@@ -88,7 +88,7 @@
       mysql_user: name=wordpress host=localhost password=bananas priv=wordpress.*:ALL
 
     - name: Create wp-config.php
-      template: src=templates/wordpress/wp-config.php dest=/var/www/book.example.com/wp-config.php
+      template: src=templates/wordpress/wp-config.php dest=/var/www/bahirat-enterprises.com/wp-config.php
 
     - name: Does wordpress DB exists?
       command: mysql -u root wordpress -e "SELECT ID FROM wordpress.wp_users LIMIT 1;"

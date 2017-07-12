@@ -3,8 +3,8 @@ upstream php{
 }
 
 server {
-  server_name book.example.com;
-  root /var/www/book.example.com;
+  server_name bahirat-enterprises.com;
+  root /var/www/bahirat-enterprises.com;
 
   index index.php;
 
