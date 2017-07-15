@@ -22,16 +22,16 @@ Vagrant.configure(2) do |config|
   # Create a forwarded port mapping which allows access to a specific port
   # within the machine from a port on the host machine. In the example below,
   # accessing "localhost:8080" will access port 80 on the guest machine.
-   config.vm.network "forwarded_port", guest: 80, host: 8080
+   #config.vm.network "forwarded_port", guest: 80, host: 8080
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
-   config.vm.network "private_network", ip: "192.168.33.20"
+   #config.vm.network "private_network", ip: "192.168.33.20"
 
   # Create a public network, which generally matched to bridged network.
   # Bridged networks make the machine appear as another physical device on
   # your network.
-  # config.vm.network "public_network"
+    config.vm.network "public_network", bridge: "en0: Wi-Fi (AirPort)", ip: "192.168.1.20"
 
   # Share an additional folder to the guest VM. The first argument is
   # the path on the host to the actual folder. The second argument is
@@ -71,4 +71,15 @@ Vagrant.configure(2) do |config|
    config.vm.provision "ansible" do |ansible|
      ansible.playbook = "provisioning/playbook.yml"
    end 
+   
+   # Add the necessary routing for the site to be accessible publicly
+   # Refer https://www.vagrantup.com/docs/networking/public_network.html
+   config.vm.provision "shell",
+    run: "always",
+    inline: "route add default gw 192.168.1.1"
+
+    config.vm.provision "shell",
+    run: "always",
+    inline: "eval `route -n | awk '{ if ($8 ==\"eth0\" && $2 != \"0.0.0.0\") print \"route del default gw \" $2; }'`"
+
 end

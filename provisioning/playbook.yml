@@ -66,7 +66,7 @@
       apt: name=nginx  state=present
  
     - name: Start nginx service
-      service: name=nginx state=running
+      service: name=nginx state=started
 
     - name: Create nginx default configuration 
       template: src=templates/nginx/default dest=/etc/nginx/sites-available/default
