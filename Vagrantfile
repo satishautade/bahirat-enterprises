@@ -12,7 +12,7 @@ Vagrant.configure(2) do |config|
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
-  config.vm.box = "ubuntu/trusty64"
+  config.vm.box = "debian/jessie64"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -74,12 +74,10 @@ Vagrant.configure(2) do |config|
    
    # Add the necessary routing for the site to be accessible publicly
    # Refer https://www.vagrantup.com/docs/networking/public_network.html
-   config.vm.provision "shell",
-    run: "always",
-    inline: "route add default gw 192.168.1.1"
-
-    config.vm.provision "shell",
-    run: "always",
-    inline: "eval `route -n | awk '{ if ($8 ==\"eth0\" && $2 != \"0.0.0.0\") print \"route del default gw \" $2; }'`"
-
+#   config.vm.provision "shell",
+ #   run: "always",
+ #   inline: "route add default gw 192.168.1.1"
+ #   config.vm.provision "shell",
+ #   run: "always",
+ #   inline: "eval `route -n | awk '{ if ($8 ==\"eth0\" && $2 != \"0.0.0.0\") print \"route del default gw \" $2; }'`"
 end
