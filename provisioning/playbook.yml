@@ -78,6 +78,9 @@
    
     - name: Copy WordPress files     
       command: cp -a /tmp/wordpress/. /var/www/bahirat-enterprises.com creates=/var/www/bahirat-enterprises.com/wp-settings.php
+
+    - name: Make Upload directory writable to www-data user
+      file: dest=/var/www/bahirat-enterprises.com/wp-content/upload owner=www-data group=www-data recurse=yes state=directory
     
     - name: Create wordpress MYSQL DB
       mysql_db: name=wordpress state=present 
