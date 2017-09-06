@@ -19,6 +19,7 @@
        - php5-fpm
        - php5-mysql
        - php5-xmlrpc
+       - php5-gd
    
     - name: Remove Apache-2 installed with PHP
       apt: name=apache2 state=absent
